@@ -78,4 +78,28 @@ router.post('/:id/comments', async (req, res) => {
   }
 });
 
+router.put('/:id', async (req, res) => {
+  const { id } = req.params;
+  const originalPost = await db.findById(id);
+  const updatedPost = req.body;
+  const { title, contents } = updatedPost;
+
+  if (originalPost.length === 0)
+    res.status(404).json({ success: false, message: "Post does not exist." });
+  
+  if (!title || !contents)
+    res.status(400).json({ success: false, message: "Please provide `title` and `contents` for post." });
+  
+  try {
+    const updated = await db.update(id, updatedPost);
+
+    if (updated) {
+      const post = await db.findById(id);
+      res.status(200).json({ success: true, post });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Post could not be modified." });
+  }
+});
+
 module.exports = router;
